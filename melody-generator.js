@@ -223,7 +223,7 @@ async function playSong() { //Milan wil dat ik uitzoek waarom hier wel of niet e
     }
 
     if (selected < melody.length - 1) selected++;
-    render(false);
+    render();
 
   }
 
@@ -267,7 +267,7 @@ async function playSong() { //Milan wil dat ik uitzoek waarom hier wel of niet e
 
 
 
-function render(should = true) {
+function render() {
 
   function wrapOnClicks(item, i, itemElement) {
     wrap = document.createElement("div");
