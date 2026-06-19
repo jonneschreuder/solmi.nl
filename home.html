@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>solmi.nl</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="top-bar">
+  <h1>solmi.nl</h1>
+</header>
+
+
+
+<button id="open-popup" class="generate-button">Create your own melody!</button>
+
+<div id="generator-popup" class="generator-popup">
+  <div class="generator-popup-content">
+    <button id="close-popup" class="close-popup">X</button>
+    <iframe id="iframe"></iframe>
+  </div>
+</div>
+
+
+<h3>Or pick from our repertoire:</h2>
+
+<table id="song-list" class="song-list">
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Level</th>
+      <th>Instrument</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<div id="list-generator-popup" class="generator-popup">
+  <div class="generator-popup-content">
+    <button id="list-close-popup" class="close-popup">X</button>
+    <iframe id="list-iframe"></iframe>
+  </div>
+</div>
+
+<script src="home.js"></script>
+</body>
+</html>

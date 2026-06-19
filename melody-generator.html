@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>solmi.nl</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header id="top-bar-edit-mode" class="top-bar">
+  <input type="text" id="title" value="[Your song title]" class="title-input"></input>
+  <div>
+    <label for="level-input" id="labelForLevel">Level:</label>
+    <select id="level-input" class="level-input">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+    </select>
+  </div>
+  <div id="basicButtons">
+    <button title="Undo last action (ctrl+z)" id="undo" onclick="undo()">undo</button>
+    <button title="Clear all" id="clear" onclick="clearAll()">clear</button>
+    <button title="Discard all changes" id="discard" disabled="true">discard changes</button>
+    <button title="Save to page" id="save" disabled="true">save</button>
+  </div>
+</header>
+
+<header id="top-bar-view-mode" class="top-bar">
+  <h2 id="static-title"></h1>
+  <h3 id="static-level"></h2>
+</header>
+
+<div id="tempoPlay" class="tempo-play">
+  <label for="slider">Tempo:</label>
+  <input title="Change tempo" type="range" id="slider" min="100" max="400" value="214">
+  <button title="Play melody (s)" id="play" onclick="playSong()">play</button>
+</div>
+
+<div id="editModeOnly" class="controls">
+
+  <div class="row">
+    <button title="Octave down (-)" id="oct-down" onclick="octave(-7)">↓ oct</button>
+    <button title="Sharp (s)" id="sharp" onclick="sharpFlat('sharp')">♯</button>
+    <button title="Flat (s)" id="flat" onclick="sharpFlat('flat')">♭</button>
+    <button title="Octave up (=)" id="oct-up" onclick="octave(7)">↑ oct</button>
+  </div>
+
+  <div id="note-buttons" class="row"></div>
+
+  <div class="row">
+    <button title="Add space" id="space" style="width:237.5px" onclick="space()">space</button>
+    <button title="Add enter" id="enter" onclick="enter()">enter</button>
+    <button title="Backspace" id="backspace" onclick="backspace()">backspace</button>
+  </div>
+
+  <div class="row">
+    <button title="One step up (↑)" id="up" onclick="oneStep(1)">↑ 1</button>
+    <button title="One step down (↓)" id="down" onclick="oneStep(-1)">↓ 1</button>
+    <button title="Insert cursor" id="insert" onclick="insert()">I insert</button>
+    <button title="Add lyrics" id="lyrics" onclick="lyricMode()">lyrics</button>
+  </div>
+
+</div>
+
+<div id="stave"></div>
+
+<label for="keyInput">Do:</label>
+<select id="keyInput" class="key-input"></select>
+
+<div id="instrument" class="instrument"></div>
+
+<script src="melody-generator.js"></script>
+</body>
+</html>
