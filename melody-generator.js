@@ -239,7 +239,7 @@ async function playSong() { //Milan wil dat ik uitzoek waarom hier wel of niet e
   playingSong = false;
   
   render();
-  updateButtons();
+  if (mode === "editMode") updateButtons();
   
 }
 
