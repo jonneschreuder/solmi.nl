@@ -195,6 +195,9 @@ button.active {
 
 .end-cursor-hover {
   width: -webkit-fill-available;
+  position: relative;
+  top: -10px;
+  height: inherit;
 }
 
 .end-cursor-hover:hover::before {
