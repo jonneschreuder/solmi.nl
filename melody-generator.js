@@ -73,17 +73,21 @@ let mode;
 
 
 
-function ToNoteObject(diaDeg, acc = null) {
+function ToNoteObject(value) {
   id++;
-  if (diaDeg === -1) return {type: "space", id: id};
-  if (diaDeg === -2) return {type: "enter", id: id};
+  if (value === -1) return {type: "space", id: id};
+  if (value === -2) return {type: "enter", id: id};
+  const isObject = typeof value === "object";
+  const diaDeg = isObject ? value.diaDeg : value;
+  const acc = isObject && value.acc ? value.acc : null;
   return {
     type: "note",
     id: id,
     name: acc ? scale[diaDeg % 7][acc] : scale[diaDeg % 7].normal,
     diatonicDegree: diaDeg,
     chromaticDegree: calcChromDeg(diaDeg, acc),
-    accidental: acc
+    accidental: acc,
+    lyric: isObject && value.lyric ? value.lyric : null
   }
 }
 
@@ -383,7 +387,7 @@ function render() {
 
       let width = noteWidth;
 
-      if (lyrics === true) {
+      if (mode === "editMode" && lyrics === true) {
         const lyric = document.createElement("input");
         lyric.type = "text";
         lyric.maxLength = 12;
@@ -411,6 +415,16 @@ function render() {
           document.getElementsByClassName("placeholder")[0].classList.add("cursor");
         })
 
+      }
+
+      if (mode === "viewMode" && item.lyric) {
+        const lyric = document.createElement("div");
+        lyric.textContent = item.lyric;
+        lyric.className = "lyric";
+        width = Math.max(29, lyric.textContent.length * 6.25);
+        lyric.style.width = `${width}px`;
+        lyric.style.border = "none";
+        wrap.appendChild(lyric);
       }
 
       placeOnStave(wrap, width);
@@ -480,7 +494,7 @@ function buildNoteButtons() {
     btn.textContent = name;
     btn.title = "Add " + name + " (" + (scaleDegree + 1) + ")";
     btn.onclick = () => {
-      placeholderToItem(ToNoteObject(melody[selected].diatonicDegree + scaleDegree, melody[selected].accidental));
+      placeholderToItem(ToNoteObject({diaDeg: melody[selected].diatonicDegree + scaleDegree, acc: melody[selected].accidental}));
     }
     noteButtonsEl.appendChild(btn);
   });
@@ -1015,9 +1029,7 @@ function keyListeners() {
 
 
 //FOUTEN:
-
 //tijdens afspelen moet hij meescrollen en bij noot invoegen onderaan moet hij niet naar boven springen
-//MEMORY ARRAY TO VIEWER DOET HET NOG NIET MET ALTERATIES en LYRICS
 //bij het sluiten van de popup probeert bij de contentwindow.functie te callen??
 
 
