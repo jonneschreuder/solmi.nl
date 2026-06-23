@@ -59,6 +59,14 @@ newSong("My heart will go on", "e", 1, "piano",
   ]
 )
 
+newSong("Billie Jean", "c", 1, "bass",
+  [5, 2, 4, 5, 4, 2, 1, 2]
+)
+
+
+
+
+
 
 
 const generatorPopup = document.getElementById("generator-popup");

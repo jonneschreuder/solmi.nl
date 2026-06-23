@@ -42,6 +42,7 @@ let beatDuration;
 let id = 1;
 let history;
 let lyrics;
+let instrument;
 
 
 let mode;
@@ -100,7 +101,7 @@ function placeholderToItem(object) {
   selected++;
   render();
   updateButtons();
-  tileNames();
+  updateInstrumentNotes();
 }
 
 function snapshot() {
@@ -456,8 +457,6 @@ function render() {
     createEndCursorHover();
   }
 
-  console.log("rendered!");
-
 }
 
 
@@ -498,7 +497,6 @@ function buildNoteButtons() {
     }
     noteButtonsEl.appendChild(btn);
   });
-  console.log("note buttons built!");
 }
 
 function space() {
@@ -523,7 +521,7 @@ function backspace() {
   if (melody[selected].type === "note") playSingleTone(melody[selected].chromaticDegree);
   render();
   updateButtons();
-  tileNames();
+  updateInstrumentNotes();
 }
 
 function sharpFlat(sharpOrFlat) {
@@ -540,7 +538,7 @@ function sharpFlat(sharpOrFlat) {
   sel.chromaticDegree = calcChromDeg(sel.diatonicDegree, sel.accidental);
   render();
   updateButtons();
-  tileNames();
+  updateInstrumentNotes();
   if (sel.type === "note") playSingleTone(sel.chromaticDegree);
 }
 
@@ -550,7 +548,7 @@ function insert() {
   selected = clickedNoteIndex; //ingevoegde placeholder ook selecteren
   render();
   updateButtons();
-  tileNames();
+  updateInstrumentNotes();
 }
 
 function lyricMode() {
@@ -576,7 +574,7 @@ function undo() {
   selected = prev.selected;
   render();
   updateButtons();
-  tileNames();
+  updateInstrumentNotes();
 }
 
 function clearAll() {
@@ -586,7 +584,7 @@ function clearAll() {
     selected = 0;
     render();
     updateButtons();
-    tileNames();
+    updateInstrumentNotes();
   }
 }
 
@@ -599,7 +597,7 @@ function oneStep(change) {
   sel.chromaticDegree = calcChromDeg(sel.diatonicDegree);
   render();
   updateButtons();
-  tileNames();
+  updateInstrumentNotes();
   playSingleTone(sel.chromaticDegree);
 }
 
@@ -612,7 +610,7 @@ function octave(change) {
   sel.chromaticDegree = calcChromDeg(sel.diatonicDegree, sel.accidental);
   render();
   updateButtons();
-  tileNames();
+  updateInstrumentNotes();
   if (sel.type === "note") playSingleTone(sel.chromaticDegree);
 }
 
@@ -689,7 +687,6 @@ function updateButtons() {
     document.getElementById(id).classList.toggle("active", sel?.accidental === id);
   });
 
-  console.log("buttons updated!");
 }
 
 
@@ -713,6 +710,17 @@ function updateButtons() {
 =========================== */
 
 
+function updateInstrumentNotes() {
+  if (instrument === "piano") updatePianoNotes();
+  if (instrument === "bass") updateBassNotes();
+}
+
+function rebuildInstrument() {
+  if (instrument === "piano") buildPiano();
+  if (instrument === "bass") buildBass();
+}
+
+
 
 
 function buildPiano() {
@@ -733,21 +741,22 @@ function buildPiano() {
   document.getElementById("instrument").innerHTML = "";
   let startOffset = 0;
 
+  const instrument = document.getElementById("instrument");
+  const area = document.createElement("div");
+  instrument.appendChild(area);
+  area.className = "piano-area";
+
   for (let i = 0; i < 7; i++) {
-    buildOneGroup(ForC, (0 - steps + startOffset));
+    buildOneGroup(ForC, (0 - steps + startOffset), area);
     startOffset = ForC === "F" ? startOffset + 7 : startOffset + 5;
     ForC = ForC === "F" ? "C" : "F";
   }
 
-  tileNames();
-
-  console.log("piano built!");
+  updatePianoNotes();
 
 }
 
-function buildOneGroup(ForC, startOffset) {
-
-  const area = document.getElementById("instrument");
+function buildOneGroup(ForC, startOffset, area) {
 
   const map = new Map([
     ["classForF", "f-black-tile-gap"], 
@@ -781,7 +790,7 @@ function buildOneGroup(ForC, startOffset) {
   }
 }
 
-function tileNames() {
+function updatePianoNotes() { //DEZE HERGEBRUIKEN VOOR BAS
   function compare(a, b) {
     return a.chromaticDegree - b.chromaticDegree;
   }
@@ -819,6 +828,71 @@ function tileNames() {
 }
 
 
+
+
+function buildBass() {
+  
+  document.getElementById("instrument").innerHTML = "";
+
+  steps = (chromIndexOfKey + 1) % 12;
+  
+  
+  buildString(0 - steps + 15);
+  buildString(0 - steps + 10);
+  buildString(0 - steps + 5);
+  buildString(0 - steps);
+  
+  updateBassNotes();
+
+
+}
+
+function buildString(start) {
+  const area = document.getElementById("instrument");
+
+  const bassString = document.createElement("div");
+  bassString.className = "bass-string";
+  area.appendChild(bassString);
+
+  
+
+  for (let i = start; i <= start + 10; i++) {
+    const noteMark = document.createElement("div");
+    noteMark.id = i;
+    noteMark.className = "note-mark"
+    if (i === start) noteMark.style.borderRight = "5px solid grey";
+    bassString.appendChild(noteMark);
+  }
+
+  
+}
+
+function updateBassNotes() {
+  function compare(a, b) {
+    return a.chromaticDegree - b.chromaticDegree;
+  }
+  let noteRange = melody.filter(item => item.type === "note");
+  if (!noteRange.length) return;
+  noteRange.sort(compare);
+  noteRange = [...new Map(noteRange.map(item => [item.chromaticDegree, item])).values()];
+
+  for (let i = 0 - steps; document.getElementById(i); i++) {
+    document.getElementById(i).textContent = "";
+    const moduloMatch = noteRange.find(item => ((item.chromaticDegree + steps) % 12 === (i + steps) % 12));
+
+    const fret = document.getElementById(i);
+
+    if (moduloMatch) {
+      fret.textContent = moduloMatch.name;
+    }
+  }
+}
+
+
+
+//updatebassnotes en updatepianonotes beter samenvoegen / minifuncties
+//bij bas laat hij nu niet alle noten zien door de uplicaten van id's
+//hover en click on fret to play
 
 
 
@@ -860,6 +934,7 @@ window.newEmptySong = function() {
   selected = 0;
   history = [];
   lyrics = false;
+  instrument = "piano";
   
   furtherInitialization();
 
@@ -882,6 +957,7 @@ window.loadSong = function(song) {
     melody.push(ToNoteObject(value));
   })
   key = song.key;
+  instrument = song.instrument;
   selected = null;
 
   furtherInitialization();
@@ -889,10 +965,9 @@ window.loadSong = function(song) {
   document.getElementById("static-title").textContent = song.title;
   document.getElementById("static-level").textContent = "level: " + song.level;
 
-  buildPiano();
   render();
   
-}
+} //buildInstrument hoeft hier niet want dat gebeurt later bij keyChange()
 
 
 function initializeSomeStuff() {
@@ -901,7 +976,7 @@ function initializeSomeStuff() {
   document.getElementById("keyInput").innerHTML = absoluteChromaticScale.map(key => `<option value="${key}">${key}</option>`).join("");
   //join = array to string with no separator ("")
 
-  document.getElementById("keyInput").addEventListener("input", () => {
+  document.getElementById("keyInput").addEventListener("input", function () {
     key = this.value;
     keyChange();
   });
@@ -910,7 +985,6 @@ function initializeSomeStuff() {
     beatDuration = 60000 / this.value;
   })
 
-  console.log("some stuff has been initialized!");
 }
 
 
@@ -925,6 +999,7 @@ function keyChange() {
   chromIndexOfKey = absoluteChromaticScale.indexOf(key);
   steps = chromIndexOfKey % 7;
   rootFreq = calcFreq(equalTempA, chromIndexOfKey - 28);
+  rebuildInstrument();
 }
 
 
@@ -1037,4 +1112,3 @@ function keyListeners() {
 
 //VINGERZETTING
 //GITAAR / UKELELE VISUAL
-

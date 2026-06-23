@@ -388,7 +388,7 @@ button.active {
   margin-bottom: 16px;
 }
 
-.instrument {
+.piano-area {
   bottom: 0px;
   left: 0px;
   position: relative;
@@ -460,4 +460,34 @@ button.active {
   color: rgb(196, 196, 196);
   font-weight: 100;
   text-shadow: none;
+}
+
+
+
+
+
+
+
+.bass-string {
+  border-top: 4px solid rgb(189, 189, 189);
+  height: 30px;
+  width: 100%;
+  display: flex;
+}
+
+
+.note-mark {
+  top: -10px;
+  position: relative;
+  padding: 0px 2px;
+  width: 80px;
+  height: 30px;
+  text-shadow:
+      0 0 5px #0ff,
+      0 0 10px #0ff,
+      0 0 20px #0ff,
+      0 0 40px #0ff,
+      0 0 80px #0ff;
+  text-align: center;
+  border-right: 1px solid grey;
 }
