@@ -12,7 +12,7 @@ const scale = [
 
 
 const equalTempA = 440;
-const absoluteChromaticScale = ["f", "f# / g♭", "g", "g# / a♭", "a", "a# / b♭", "b", "c", "c# / d♭", "d", "d# / e♭", "e"];
+const absoluteChromaticScale = ["f", "g♭", "g", "a♭", "a", "b♭", "b", "c", "d♭", "d", "e♭", "e"];
 
 
 const noteWidth = 25;
@@ -43,6 +43,7 @@ let id = 1;
 let history;
 let lyrics;
 let instrument;
+let frets;
 
 
 let mode;
@@ -723,6 +724,30 @@ function rebuildInstrument() {
 
 
 
+function compare(a, b) {
+  return a.chromaticDegree - b.chromaticDegree;
+}
+
+function setNoteRange() {
+  let noteRange = melody.filter(item => item.type === "note");
+  if (!noteRange.length) return;
+  noteRange.sort(compare);
+  noteRange = [...new Map(noteRange.map(item => [item.chromaticDegree, item])).values()]; 
+  //een Map filtert automatisch op uniek -> kan dit niet ook met een Set? BOOKMARK
+  return noteRange;
+}
+
+function findModuloMatch(noteRange, id) {
+  return noteRange.find(item => ((item.chromaticDegree + steps) % 12 === (id + steps) % 12));
+}
+
+
+
+
+
+
+
+
 function buildPiano() {
   
   const whiteTileWidth = 28;
@@ -790,14 +815,10 @@ function buildOneGroup(ForC, startOffset, area) {
   }
 }
 
-function updatePianoNotes() { //DEZE HERGEBRUIKEN VOOR BAS
-  function compare(a, b) {
-    return a.chromaticDegree - b.chromaticDegree;
-  }
-  let noteRange = melody.filter(item => item.type === "note");
-  if (!noteRange.length) return;
-  noteRange.sort(compare);
-  noteRange = [...new Map(noteRange.map(item => [item.chromaticDegree, item])).values()]; //een Map filtert automatisch op uniek
+
+function updatePianoNotes() {
+  let noteRange = setNoteRange();
+  
   isRangeWithinOctave = 
     noteRange[noteRange.length-1].chromaticDegree 
     - noteRange[0].chromaticDegree 
@@ -808,9 +829,7 @@ function updatePianoNotes() { //DEZE HERGEBRUIKEN VOOR BAS
     document.getElementById(i).textContent = "";
     const exactMatch = noteRange.find(item => (item.chromaticDegree === i));
     const moduloMatch = 
-      isRangeWithinOctave ? 
-      noteRange.find(item => ((item.chromaticDegree + steps) % 12 === (i + steps) % 12)) : 
-      null
+      isRangeWithinOctave ? findModuloMatch(noteRange, i) : null
     ;
 
     const tile = document.getElementById(i);
@@ -836,14 +855,12 @@ function buildBass() {
 
   steps = (chromIndexOfKey + 1) % 12;
   
-  
   buildString(0 - steps + 15);
   buildString(0 - steps + 10);
   buildString(0 - steps + 5);
   buildString(0 - steps);
   
   updateBassNotes();
-
 
 }
 
@@ -854,45 +871,42 @@ function buildString(start) {
   bassString.className = "bass-string";
   area.appendChild(bassString);
 
-  
-
-  for (let i = start; i <= start + 10; i++) {
+  for (let i = start; i <= start + 7; i++) {
     const noteMark = document.createElement("div");
     noteMark.id = i;
     noteMark.className = "note-mark"
     if (i === start) noteMark.style.borderRight = "5px solid grey";
     bassString.appendChild(noteMark);
   }
-
   
 }
 
 function updateBassNotes() {
-  function compare(a, b) {
-    return a.chromaticDegree - b.chromaticDegree;
-  }
-  let noteRange = melody.filter(item => item.type === "note");
-  if (!noteRange.length) return;
-  noteRange.sort(compare);
-  noteRange = [...new Map(noteRange.map(item => [item.chromaticDegree, item])).values()];
 
-  for (let i = 0 - steps; document.getElementById(i); i++) {
-    document.getElementById(i).textContent = "";
-    const moduloMatch = noteRange.find(item => ((item.chromaticDegree + steps) % 12 === (i + steps) % 12));
+  let noteRange = setNoteRange();
 
-    const fret = document.getElementById(i);
+  const allStrings = document.getElementById("instrument").children;
+  const allFrets = [];
+  
+  Array.from(allStrings).forEach((item) => {
+    allFrets.push(...Array.from(item.children));
+  })
 
-    if (moduloMatch) {
-      fret.textContent = moduloMatch.name;
-    }
-  }
+  allFrets.forEach((element, i) => { //i = current index of allfrets array
+    element.textContent = "";
+    element.textContent = frets.has(i) ? findModuloMatch(noteRange, Number(element.id))?.name : null;
+  })
 }
 
 
 
-//updatebassnotes en updatepianonotes beter samenvoegen / minifuncties
-//bij bas laat hij nu niet alle noten zien door de uplicaten van id's
 //hover en click on fret to play
+//css variables
+//bij afspelen licht hij de verkeerde frets op
+
+
+
+
 
 
 
@@ -951,6 +965,7 @@ window.loadSong = function(song) {
   document.getElementById("editModeOnly").remove();
   document.getElementById("basicButtons").remove();
   document.getElementById("top-bar-edit-mode").remove();
+  document.getElementById("key-input-area").remove();
 
   mode = "viewMode";
   song.melody.forEach((value) => {
@@ -959,11 +974,13 @@ window.loadSong = function(song) {
   key = song.key;
   instrument = song.instrument;
   selected = null;
+  frets = song.frets;
 
   furtherInitialization();
 
   document.getElementById("static-title").textContent = song.title;
   document.getElementById("static-level").textContent = "level: " + song.level;
+  document.getElementById("static-key").textContent = "Key: " + song.key;
 
   render();
   
@@ -989,7 +1006,7 @@ function initializeSomeStuff() {
 
 
 function furtherInitialization() {
-  document.getElementById("keyInput").value = key;
+  if (mode === "editMode") document.getElementById("keyInput").value = key;
   keyChange();
   beatDuration = 280;
 }
@@ -1106,9 +1123,13 @@ function keyListeners() {
 //FOUTEN:
 //tijdens afspelen moet hij meescrollen en bij noot invoegen onderaan moet hij niet naar boven springen
 //bij het sluiten van de popup probeert bij de contentwindow.functie te callen??
+//hover over spaces uit bij viewmode?
 
 
 
 
 //VINGERZETTING
 //GITAAR / UKELELE VISUAL
+//melodie opslaan in client en toevoegen aan songList?
+
+//gebruiker kiest toonsoorten en stelt vingerzetting in per toonsoort

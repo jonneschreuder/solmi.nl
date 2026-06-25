@@ -477,7 +477,7 @@ button.active {
 
 
 .note-mark {
-  top: -10px;
+  top: -16px;
   position: relative;
   padding: 0px 2px;
   width: 80px;
@@ -490,4 +490,5 @@ button.active {
       0 0 80px #0ff;
   text-align: center;
   border-right: 1px solid grey;
+  line-height: 30px;
 }

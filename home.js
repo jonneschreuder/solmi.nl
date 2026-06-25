@@ -2,13 +2,14 @@
 let songList = [];
 let id = 1;
 
-function newSong(title, key, level, instrument, melody) {
+function newSong(title, key, level, instrument, melody, frets) {
     const song = {
         title: title,
         key: key,
         level: level,
         instrument: instrument,
-        melody: melody
+        melody: melody,
+        frets: frets
     }
     songList.push(song);
     return song;
@@ -39,12 +40,7 @@ newSong("Nokia ringtone", "a", 2, "piano",
   [11, 10, 5, -1, 6, -1, 9, 8, 3, -1, 4, -1, 8, 7, 2, -1, 4, -1, 7]
 )
 
-newSong("Somebody that I used to know - Gotye", "f", 2, "piano",
-  [4, -1, 4, -1, 8, -1, 8, -1, 9, 10, 11, 9, 8, -1, -1, -1, 
-    7, -1, 7, -1, 6, -1, 6, -1, 5, -1, 5, -1, 4]
-)
-
-newSong("Star Wars theme song", "a# / b♭", 2, "piano",
+newSong("Star Wars theme song", "b♭", 2, "piano",
   [7, -1, -1, -1, -1, -1, 11, -1, -1, -1, -1, -1, 
     10, 9, 8, 14, -1, -1, -1, -1, -1, 11, -1, -1, 
     10, 9, 8, 14, -1, -1, -1, -1, -1, 11, -1, -1, 
@@ -59,10 +55,15 @@ newSong("My heart will go on", "e", 1, "piano",
   ]
 )
 
-newSong("Billie Jean", "c", 1, "bass",
-  [5, 2, 4, 5, 4, 2, 1, 2]
+newSong("Billie Jean - Michael Jackson", "a", 1, "bass",
+  [5, 2, 4, 5, 4, 2, 1, 2],
+  new Set([10, 12, 18, 20]) //all played frets from left to right top to bottom on the fretboard
 )
 
+newSong("Bad guy - Billie Eilish", "b♭", 2, "bass",
+  [5, -1, -1, 5, 7, 5, -1, 5, -1, 5, -1, 5, 7, 5, 4],
+  new Set([27, 17, 25])
+)
 
 
 
