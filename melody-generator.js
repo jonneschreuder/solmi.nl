@@ -730,7 +730,6 @@ function compare(a, b) {
 
 function setNoteRange() {
   let noteRange = melody.filter(item => item.type === "note");
-  if (!noteRange.length) return;
   noteRange.sort(compare);
   noteRange = [...new Map(noteRange.map(item => [item.chromaticDegree, item])).values()]; 
   //een Map filtert automatisch op uniek -> kan dit niet ook met een Set? BOOKMARK
@@ -818,6 +817,8 @@ function buildOneGroup(ForC, startOffset, area) {
 
 function updatePianoNotes() {
   let noteRange = setNoteRange();
+  if (!noteRange.length) return;
+  
   
   isRangeWithinOctave = 
     noteRange[noteRange.length-1].chromaticDegree 
@@ -884,6 +885,8 @@ function buildString(start) {
 function updateBassNotes() {
 
   let noteRange = setNoteRange();
+  if (!noteRange.length) return;
+  
 
   const allStrings = document.getElementById("instrument").children;
   const allFrets = [];
@@ -941,6 +944,7 @@ initializeSomeStuff();
 
 window.newEmptySong = function() {
   document.getElementById("top-bar-view-mode").remove();
+  document.getElementById("static-key").remove();
   
   mode = "editMode";
   melody = [{type: "placeholder", diatonicDegree: 7}];
@@ -965,7 +969,10 @@ window.loadSong = function(song) {
   document.getElementById("editModeOnly").remove();
   document.getElementById("basicButtons").remove();
   document.getElementById("top-bar-edit-mode").remove();
+  if (song.instrument === "bass")
   document.getElementById("key-input-area").remove();
+  if (song.instrument === "piano")
+    document.getElementById("static-key").remove();
 
   mode = "viewMode";
   song.melody.forEach((value) => {
@@ -980,6 +987,7 @@ window.loadSong = function(song) {
 
   document.getElementById("static-title").textContent = song.title;
   document.getElementById("static-level").textContent = "level: " + song.level;
+  if (song.instrument === "bass")
   document.getElementById("static-key").textContent = "Key: " + song.key;
 
   render();
@@ -1006,7 +1014,7 @@ function initializeSomeStuff() {
 
 
 function furtherInitialization() {
-  if (mode === "editMode") document.getElementById("keyInput").value = key;
+  if (instrument === "piano") document.getElementById("keyInput").value = key;
   keyChange();
   beatDuration = 280;
 }
