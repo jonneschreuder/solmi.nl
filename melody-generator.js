@@ -43,7 +43,8 @@ let id = 1;
 let history;
 let lyrics;
 let instrument;
-let frets;
+let usedFrets;
+let allFrets = [];
 
 
 let mode;
@@ -153,6 +154,7 @@ let playingSong = false;
 
 let currentOsc;
 let currentChromDeg;
+let playedNote;
 
 
 function oscillator(freq) {
@@ -180,13 +182,24 @@ function oscillator(freq) {
 function startTone(chromDeg) {
   oscillator(calcFreq(rootFreq, chromDeg));
   currentChromDeg = chromDeg;
-  document.getElementById(currentChromDeg).classList.add("played-key");
+  if (instrument === "piano") {
+    playedNote = document.getElementById(currentChromDeg);
+  }
+  if (instrument === "bass") {
+    const usedFretElements = [...usedFrets].map(i => allFrets[i]);
+    playedNote = usedFretElements.find(item => (Number(item.id) + steps) % 12 === (currentChromDeg + steps ) % 12);
+  }
+    
+  playedNote.classList.add("played-key");
 }
+
+
+
 
 function stopTone() {
   currentOsc?.stop();
   currentOsc = null;
-  document.getElementById(currentChromDeg)?.classList.remove("played-key");
+  playedNote?.classList.remove("played-key");
   currentChromDeg = null;
 }
 
@@ -866,18 +879,19 @@ function buildBass() {
 }
 
 function buildString(start) {
-  const area = document.getElementById("instrument");
+  const instrument = document.getElementById("instrument");
 
   const bassString = document.createElement("div");
   bassString.className = "bass-string";
-  area.appendChild(bassString);
+  instrument.appendChild(bassString);
 
   for (let i = start; i <= start + 7; i++) {
-    const noteMark = document.createElement("div");
-    noteMark.id = i;
-    noteMark.className = "note-mark"
-    if (i === start) noteMark.style.borderRight = "5px solid grey";
-    bassString.appendChild(noteMark);
+    const fret = document.createElement("div");
+    fret.id = i;
+    fret.className = "fret"
+    if (i === start) fret.style.borderRight = "5px solid grey";
+    bassString.appendChild(fret);
+    allFrets.push(fret);
   }
   
 }
@@ -887,25 +901,19 @@ function updateBassNotes() {
   let noteRange = setNoteRange();
   if (!noteRange.length) return;
   
-
-  const allStrings = document.getElementById("instrument").children;
-  const allFrets = [];
-  
-  Array.from(allStrings).forEach((item) => {
-    allFrets.push(...Array.from(item.children));
-  })
-
   allFrets.forEach((element, i) => { //i = current index of allfrets array
     element.textContent = "";
-    element.textContent = frets.has(i) ? findModuloMatch(noteRange, Number(element.id))?.name : null;
+    element.textContent = usedFrets.has(i) ? findModuloMatch(noteRange, Number(element.id))?.name : "";
   })
+
 }
 
 
 
-//hover en click on fret to play
-//css variables
-//bij afspelen licht hij de verkeerde frets op
+
+
+
+
 
 
 
@@ -981,7 +989,7 @@ window.loadSong = function(song) {
   key = song.key;
   instrument = song.instrument;
   selected = null;
-  frets = song.frets;
+  usedFrets = song.usedFrets;
 
   furtherInitialization();
 
@@ -1140,4 +1148,10 @@ function keyListeners() {
 //GITAAR / UKELELE VISUAL
 //melodie opslaan in client en toevoegen aan songList?
 
+
+
+
+//bass: 
+//hover en click on fret to play
+//css variables
 //gebruiker kiest toonsoorten en stelt vingerzetting in per toonsoort

@@ -2,14 +2,14 @@
 let songList = [];
 let id = 1;
 
-function newSong(title, key, level, instrument, melody, frets) {
+function newSong(title, key, level, instrument, melody, usedFrets) {
     const song = {
         title: title,
         key: key,
         level: level,
         instrument: instrument,
         melody: melody,
-        frets: frets
+        usedFrets: usedFrets
     }
     songList.push(song);
     return song;
