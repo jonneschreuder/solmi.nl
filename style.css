@@ -470,18 +470,18 @@ button.active {
 
 .bass-string {
   border-top: 4px solid rgb(189, 189, 189);
-  height: 30px;
+  height: var(--fret-height);
   width: 100%;
   display: flex;
 }
 
 
 .fret {
-  top: -16px;
+  top: var(--text-offset);
   position: relative;
   padding: 0px 2px;
-  width: 80px;
-  height: 30px;
+  width: var(--fret-width);
+  height: var(--fret-height);
   text-shadow:
       0 0 5px #0ff,
       0 0 10px #0ff,
@@ -490,5 +490,9 @@ button.active {
       0 0 80px #0ff;
   text-align: center;
   border-right: 1px solid grey;
-  line-height: 30px;
+  line-height: var(--fret-height);
+}
+
+.fret:hover {
+  background-color: #72bf96;
 }

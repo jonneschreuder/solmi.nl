@@ -99,7 +99,7 @@ function placeholderToItem(object) {
   melody[selected] = object;
   const sel = melody[selected];
   melody.splice(selected + 1, 0, {type: "placeholder", diatonicDegree: 7});
-  if (sel.type === "note") playSingleTone(sel.chromaticDegree);
+  if (sel.type === "note") playSingleTone(sel.chromaticDegree, setInstrumentNoteEl(sel.chromaticDegree));
   selected++;
   render();
   updateButtons();
@@ -153,8 +153,8 @@ const audio = new AudioCtx();
 let playingSong = false;
 
 let currentOsc;
-let currentChromDeg;
-let playedNote;
+// let currentChromDeg;
+let instrumentNoteEl;
 
 
 function oscillator(freq) {
@@ -179,34 +179,43 @@ function oscillator(freq) {
   currentOsc = osc;
 }
 
-function startTone(chromDeg) {
+async function playSingleTone(chromDeg, instrumentNoteEl) {
+  startTone(chromDeg, instrumentNoteEl);
+  await new Promise(r => setTimeout(r, 360)); //standaardlengte voor enkele noot ongeacht bpm
+  stopTone(instrumentNoteEl);
+}
+
+function startTone(chromDeg, instrumentNoteEl) {
   oscillator(calcFreq(rootFreq, chromDeg));
-  currentChromDeg = chromDeg;
-  if (instrument === "piano") {
-    playedNote = document.getElementById(currentChromDeg);
-  }
-  if (instrument === "bass") {
-    const usedFretElements = [...usedFrets].map(i => allFrets[i]);
-    playedNote = usedFretElements.find(item => (Number(item.id) + steps) % 12 === (currentChromDeg + steps ) % 12);
-  }
-    
-  playedNote.classList.add("played-key");
+  instrumentNoteEl.classList.add("played-key");
+}
+
+
+
+function setInstrumentNoteEl(chromDeg) {
+  if (instrument === "piano") return playedPianoTile(chromDeg);
+  if (instrument === "bass") return playedBassFret(chromDeg);
+}
+
+function playedBassFret(chromDeg) { //from stave or playingsong
+  const usedFretElements = [...usedFrets].map(i => allFrets[i]);
+  return usedFretElements.find(item => (Number(item.id) + steps) % 12 === (chromDeg + steps ) % 12);
+}
+
+function playedPianoTile(chromDeg) {
+  return document.getElementById(chromDeg);
 }
 
 
 
 
-function stopTone() {
+
+
+function stopTone(instrumentNoteEl) {
   currentOsc?.stop();
   currentOsc = null;
-  playedNote?.classList.remove("played-key");
-  currentChromDeg = null;
-}
-
-async function playSingleTone(chromDeg) {
-  startTone(chromDeg);
-  await new Promise(r => setTimeout(r, 360)); //standaardlengte voor enkele noot ongeacht bpm
-  stopTone();
+  instrumentNoteEl?.classList.remove("played-key");
+  // currentChromDeg = null;
 }
 
 async function playSong() { //Milan wil dat ik uitzoek waarom hier wel of niet een await voor moet
@@ -219,6 +228,7 @@ async function playSong() { //Milan wil dat ik uitzoek waarom hier wel of niet e
   
   let stop = false; 
   playingSong = true;
+  let playedInstrumentNote;
 
   document.getElementById("play").textContent = "stop";
   document.getElementById("play").onclick = () => {stop = true};
@@ -234,7 +244,9 @@ async function playSong() { //Milan wil dat ik uitzoek waarom hier wel of niet e
     if (stop) break;
 
     if (item.type === "note") {
-      startTone(item.chromaticDegree);
+      playedInstrumentNote?.classList.remove("played-key"); //vorige weg
+      playedInstrumentNote = setInstrumentNoteEl(item.chromaticDegree);
+      startTone(item.chromaticDegree, playedInstrumentNote);
     }
 
     if (item.type !== "enter") {
@@ -248,7 +260,7 @@ async function playSong() { //Milan wil dat ik uitzoek waarom hier wel of niet e
 
   await new Promise (r => setTimeout(r, 500)); //laatste noot niet abrupt afbreken
   
-  stopTone();
+  stopTone(playedInstrumentNote);
 
   document.getElementById("play").textContent = "play";
   document.getElementById("play").onclick = () => {playSong()};
@@ -296,7 +308,7 @@ function render() {
         if (selected !== i) {
           const clickedNoteIndex = removePlaceholderRememberNote(i);
           selected = clickedNoteIndex;
-          if (item.type === "note") playSingleTone(item.chromaticDegree);
+          if (item.type === "note") playSingleTone(item.chromaticDegree, setInstrumentNoteEl(item.chromaticDegree));
           render();
           updateButtons();
         }
@@ -310,7 +322,7 @@ function render() {
     }
     if (mode === "viewMode") {
       wrap.onclick = () => {
-        if (item.type === "note") playSingleTone(item.chromaticDegree);
+        if (item.type === "note") playSingleTone(item.chromaticDegree, setInstrumentNoteEl(item.chromaticDegree));
       }
     }
     wrap.appendChild(itemElement);
@@ -532,7 +544,7 @@ function backspace() {
     melody[selected].diatonicDegree = 7;
   }
   if (!melody.length) {melody.push({type: "placeholder", diatonicDegree: 7});}
-  if (melody[selected].type === "note") playSingleTone(melody[selected].chromaticDegree);
+  if (melody[selected].type === "note") playSingleTone(melody[selected].chromaticDegree, setInstrumentNoteEl(melody[selected].chromaticDegree));
   render();
   updateButtons();
   updateInstrumentNotes();
@@ -553,7 +565,7 @@ function sharpFlat(sharpOrFlat) {
   render();
   updateButtons();
   updateInstrumentNotes();
-  if (sel.type === "note") playSingleTone(sel.chromaticDegree);
+  if (sel.type === "note") playSingleTone(sel.chromaticDegree, setInstrumentNoteEl(sel.chromaticDegree));
 }
 
 function insert() {
@@ -612,7 +624,7 @@ function oneStep(change) {
   render();
   updateButtons();
   updateInstrumentNotes();
-  playSingleTone(sel.chromaticDegree);
+  playSingleTone(sel.chromaticDegree, setInstrumentNoteEl(sel.chromaticDegree));
 }
 
 function octave(change) {
@@ -625,7 +637,7 @@ function octave(change) {
   render();
   updateButtons();
   updateInstrumentNotes();
-  if (sel.type === "note") playSingleTone(sel.chromaticDegree);
+  if (sel.type === "note") playSingleTone(sel.chromaticDegree, setInstrumentNoteEl(sel.chromaticDegree));
 }
 
 
@@ -821,7 +833,7 @@ function buildOneGroup(ForC, startOffset, area) {
       tile.className = `tile ${blackOrWhite.toLowerCase()}-tile`;
       const tileId = startOffset + i * 2;
       tile.id = tileId;
-      tile.onclick = () => playSingleTone(tileId);
+      tile.onclick = () => playSingleTone(tileId, tile);
       parent.appendChild(tile);
     }
   }
@@ -864,6 +876,13 @@ function updatePianoNotes() {
 
 
 function buildBass() {
+
+  const fretHeight = 30;
+  const fretWidth = 70;
+  const textOffset = -fretHeight / 2 - 2;
+  document.documentElement.style.setProperty('--fret-height', `${fretHeight}px`);
+  document.documentElement.style.setProperty('--fret-width', `${fretWidth}px`);
+  document.documentElement.style.setProperty('--text-offset', `${textOffset}px`);
   
   document.getElementById("instrument").innerHTML = "";
 
@@ -890,6 +909,7 @@ function buildString(start) {
     fret.id = i;
     fret.className = "fret"
     if (i === start) fret.style.borderRight = "5px solid grey";
+    fret.onclick = () => playSingleTone(i, fret);
     bassString.appendChild(fret);
     allFrets.push(fret);
   }
@@ -1106,7 +1126,7 @@ function keyListeners() {
         selected = selected + change;
       }
       event.preventDefault();
-      if (melody[selected].type === "note") playSingleTone(melody[selected].chromaticDegree);
+      if (melody[selected].type === "note") playSingleTone(melody[selected].chromaticDegree, setInstrumentNoteEl(melody[selected].chromaticDegree));
       render();
       updateButtons();
       return;
@@ -1152,6 +1172,7 @@ function keyListeners() {
 
 
 //bass: 
-//hover en click on fret to play
-//css variables
 //gebruiker kiest toonsoorten en stelt vingerzetting in per toonsoort
+//(uberhaupt bass bij newsong)
+//als je nu heel snel op frets klikt flipt hij, remove class gaat dan niet altijd goed
+//billie eilish klopt nu niet qua octaven, dat is toch wel gek...
