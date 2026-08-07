@@ -8,6 +8,11 @@ h1 {
   font-size: 3em;
 }
 
+.display-flex {
+  display: flex;
+  justify-content: space-between;
+}
+
 .generator-popup {
   position: fixed;
   top: 0;
@@ -252,7 +257,6 @@ button.active {
   width: 25px;
 }
 
-
 .sharp::after {
   content: "#";
   font-size: 45px;
@@ -495,4 +499,13 @@ button.active {
 
 .fret:hover {
   background-color: #72bf96;
+}
+
+.dot::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 100%;
+  background-color: rgb(189, 189, 189);
 }

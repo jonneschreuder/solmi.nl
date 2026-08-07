@@ -151,10 +151,7 @@ const AudioCtx = window.AudioContext || window.webkitAudioContext;
 const audio = new AudioCtx();
 
 let playingSong = false;
-
 let currentOsc;
-// let currentChromDeg;
-let instrumentNoteEl;
 
 
 function oscillator(freq) {
@@ -187,7 +184,7 @@ async function playSingleTone(chromDeg, instrumentNoteEl) {
 
 function startTone(chromDeg, instrumentNoteEl) {
   oscillator(calcFreq(rootFreq, chromDeg));
-  instrumentNoteEl.classList.add("played-key");
+  instrumentNoteEl?.classList.add("played-key");
 }
 
 
@@ -197,7 +194,8 @@ function setInstrumentNoteEl(chromDeg) {
   if (instrument === "bass") return playedBassFret(chromDeg);
 }
 
-function playedBassFret(chromDeg) { //from stave or playingsong
+function playedBassFret(chromDeg) {
+  if (usedFrets === undefined) return; //anders lichten er veel te veel frets op
   const usedFretElements = [...usedFrets].map(i => allFrets[i]);
   return usedFretElements.find(item => (Number(item.id) + steps) % 12 === (chromDeg + steps ) % 12);
 }
@@ -215,7 +213,6 @@ function stopTone(instrumentNoteEl) {
   currentOsc?.stop();
   currentOsc = null;
   instrumentNoteEl?.classList.remove("played-key");
-  // currentChromDeg = null;
 }
 
 async function playSong() { //Milan wil dat ik uitzoek waarom hier wel of niet een await voor moet
@@ -762,11 +759,17 @@ function setNoteRange() {
 }
 
 function findModuloMatch(noteRange, id) {
-  return noteRange.find(item => ((item.chromaticDegree + steps) % 12 === (id + steps) % 12));
+  const lowestChromDeg = noteRange[0].chromaticDegree;
+  const highestChromDeg = noteRange[noteRange.length - 1].chromaticDegree;
+  return noteRange.find(item => (
+    ((item.chromaticDegree + steps) % 12 === (id + steps) % 12) 
+    &&
+    id + steps >= (lowestChromDeg + steps) % 12 && //IK DOORGROND DIT NIET
+    id <= (highestChromDeg % 12) + 
+      Math.floor(((27 - steps) - (highestChromDeg % 12)) / 12) //DIT AL HELEMAAL NIET
+      * 12
+  ));
 }
-
-
-
 
 
 
@@ -888,26 +891,37 @@ function buildBass() {
 
   steps = (chromIndexOfKey + 1) % 12;
   
-  buildString(0 - steps + 15);
-  buildString(0 - steps + 10);
-  buildString(0 - steps + 5);
-  buildString(0 - steps);
+  buildString(0 - steps + 15, 1);
+  buildString(0 - steps + 10, 2);
+  buildString(0 - steps + 5, 3);
+  buildString(0 - steps, 4);
   
   updateBassNotes();
 
 }
 
-function buildString(start) {
+function buildString(start, stringNumber) {
   const instrument = document.getElementById("instrument");
 
   const bassString = document.createElement("div");
   bassString.className = "bass-string";
   instrument.appendChild(bassString);
 
-  for (let i = start; i <= start + 7; i++) {
+  const fretsWithMiddleDots = new Set([3, 5, 7, 9]);
+
+  for (let i = start; i <= start + 12; i++) {
     const fret = document.createElement("div");
     fret.id = i;
-    fret.className = "fret"
+    fret.className = "fret";
+
+    if (
+      (stringNumber === 3 && fretsWithMiddleDots.has(i - start))
+      ||
+      (stringNumber % 2 === 0 && i - start === 12)
+    ) {
+      fret.classList.add("dot");
+    }
+      
     if (i === start) fret.style.borderRight = "5px solid grey";
     fret.onclick = () => playSingleTone(i, fret);
     bassString.appendChild(fret);
@@ -916,20 +930,29 @@ function buildString(start) {
   
 }
 
+
+
+
 function updateBassNotes() {
 
   let noteRange = setNoteRange();
-  if (!noteRange.length) return;
+  if (!noteRange.length) return; //moet dit wel? niet leegmaken?
   
   allFrets.forEach((element, i) => { //i = current index of allfrets array
     element.textContent = "";
-    element.textContent = usedFrets.has(i) ? findModuloMatch(noteRange, Number(element.id))?.name : "";
+    const textContent = mode === "viewMode" ?
+      usedFrets.has(i) ? findModuloMatch(noteRange, Number(element.id))?.name : ""
+      :
+      findModuloMatch(noteRange, Number(element.id))?.name
+      ;
+    element.textContent = textContent;
+
   })
 
 }
 
 
-
+//bij keychange wordt bas helemaal opnieuw gebouwd!
 
 
 
@@ -997,6 +1020,7 @@ window.loadSong = function(song) {
   document.getElementById("editModeOnly").remove();
   document.getElementById("basicButtons").remove();
   document.getElementById("top-bar-edit-mode").remove();
+  document.getElementById("instrument-input-area").remove();
   if (song.instrument === "bass")
   document.getElementById("key-input-area").remove();
   if (song.instrument === "piano")
@@ -1036,7 +1060,12 @@ function initializeSomeStuff() {
 
   document.getElementById("slider").addEventListener("input", function () {
     beatDuration = 60000 / this.value;
-  })
+  });
+
+  document.getElementById("instrInput").addEventListener("input", function () {
+    instrument = this.value;
+    rebuildInstrument();
+  });
 
 }
 
@@ -1165,14 +1194,13 @@ function keyListeners() {
 
 
 //VINGERZETTING
-//GITAAR / UKELELE VISUAL
 //melodie opslaan in client en toevoegen aan songList?
-
+//LOOPING
 
 
 
 //bass: 
 //gebruiker kiest toonsoorten en stelt vingerzetting in per toonsoort
-//(uberhaupt bass bij newsong)
 //als je nu heel snel op frets klikt flipt hij, remove class gaat dan niet altijd goed
-//billie eilish klopt nu niet qua octaven, dat is toch wel gek...
+//3 octaven kan nooit, bereik is afhankelijk van toonsoort... hoe inkaderen?
+

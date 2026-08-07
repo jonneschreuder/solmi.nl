@@ -57,13 +57,31 @@ newSong("My heart will go on", "e", 1, "piano",
 
 newSong("Billie Jean - Michael Jackson", "a", 1, "bass",
   [5, 2, 4, 5, 4, 2, 1, 2],
-  new Set([10, 12, 18, 20]) //all played frets from left to right top to bottom on the fretboard
+  new Set([15, 17, 28, 30]) //all played frets from left to right top to bottom on the fretboard
 )
 
 newSong("Bad guy - Billie Eilish", "b♭", 2, "bass",
   [5, -1, -1, 5, 7, 5, -1, 5, -1, 5, -1, 5, 7, 5, 4],
-  new Set([27, 17, 25])
+  new Set([27, 40, 42])
 )
+
+
+
+
+
+
+
+
+
+//0 - 12
+//13 - 25
+//26 - 38
+//39 - 51
+
+
+
+
+
 
 
 

@@ -61,18 +61,27 @@
   </div>
 
 </div>
-
 <div id="stave"></div>
 
-<div id="key-input-area">
-  <label for="keyInput">Do:</label>
-  <select id="keyInput" class="key-input"></select>
+<div class="display-flex">
+  <div id="key-input-area">
+    <label for="keyInput">Do:</label>
+    <select id="keyInput" class="key-input"></select>
+  </div>
+
+  <h3 id="static-key"></h3>
+
+  <div id="instrument-input-area">
+    <label for="instrInput">Instrument:</label>
+    <select id="instrInput" class="key-input">
+      <option value="piano">piano</option>
+      <option value="bass">bass</option>
+    </select>
+  </div>
 </div>
 
-<h3 id="static-key"></h3>
-
-
 <div id="instrument"></div>
+
 
 <script src="melody-generator.js"></script>
 </body>
